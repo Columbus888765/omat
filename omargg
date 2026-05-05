@@ -1,0 +1,85 @@
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local player = Players.LocalPlayer
+
+local function getBladesText()
+    local path = player:WaitForChild("PlayerGui")
+        :WaitForChild("Interface")
+        :WaitForChild("HUD")
+        :WaitForChild("Main")
+        :WaitForChild("Top")
+        :WaitForChild("7")
+        :WaitForChild("Blades")
+        :WaitForChild("Sets")
+    return path.Text
+end
+
+local function findGasTank()
+    local folder = workspace:WaitForChild("Unclimbable")
+        :WaitForChild("Props")
+        :WaitForChild("HQ")
+        :WaitForChild("GasTanks")
+
+    for _, v in pairs(folder:GetDescendants()) do
+        if v.Name == "Refill" then
+            return v
+        end
+    end
+end
+
+local function getBladeParts()
+    local base = workspace:WaitForChild("Characters")
+        :WaitForChild("omarsaid00")
+        :WaitForChild("Rig_omarsaid00")
+        :WaitForChild("RightHand")
+
+    return {
+        base:WaitForChild("Blade_1"),
+        base:WaitForChild("Blade_2"),
+        base:WaitForChild("Blade_3"),
+        base:WaitForChild("Blade_4"),
+        base:WaitForChild("Blade_5"),
+        base:WaitForChild("Blade_6"),
+        base:WaitForChild("Blade_7"),
+    }
+end
+
+local function allTransparency(value)
+    local blades = getBladeParts()
+    for _, v in pairs(blades) do
+        if v.Transparency ~= value then
+            return false
+        end
+    end
+    return true
+end
+
+while true do
+    task.wait(0.5)
+
+    -- Check HUD
+    local text = getBladesText()
+    if text == "0 / 3" then
+        local refill = findGasTank()
+        if refill and refill:IsA("BasePart") then
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+
+            refill.CFrame = hrp.CFrame * CFrame.new(0, 0, -5)
+
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.R, false, game)
+            task.wait(0.1)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.R, false, game)
+        end
+    end
+
+    -- Check blades transparency
+    if allTransparency(1) then
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.R, false, game)
+        task.wait(0.1)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.R, false, game)
+
+        repeat task.wait() until allTransparency(0)
+    end
+end
